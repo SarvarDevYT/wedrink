@@ -8,17 +8,15 @@ import {
   Trash2,
   CheckCircle2,
   Clock,
-  Truck,
-  Store,
-  DollarSign,
-  Package,
-  TrendingUp,
   LogOut,
   ArrowLeft,
   X,
   Sparkles,
   Phone,
-  Filter
+  Filter,
+  Image as ImageIcon,
+  Upload,
+  Link as LinkIcon
 } from 'lucide-react';
 import { PRODUCTS as defaultProducts } from '../../data/products';
 
@@ -28,12 +26,14 @@ export default function AdminPage() {
   const [pinError, setPinError] = useState(false);
 
   const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'products'
-  const [orderFilter, setOrderFilter] = useState('all'); // 'all' | 'Yangi' | 'Tayyorlanmoqda' | 'Yetkazildi'
+  const [orderFilter, setOrderFilter] = useState('all');
 
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState(defaultProducts);
 
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [imageUploadType, setImageUploadType] = useState('preset'); // 'preset' | 'file' | 'url'
+  
   const [newProduct, setNewProduct] = useState({
     name: '',
     category: 'boba',
@@ -45,7 +45,18 @@ export default function AdminPage() {
     calories: '200 kcal',
   });
 
-  // Check auth from sessionStorage
+  const PRESET_IMAGES = [
+    { label: '🧋 Brown Sugar Boba', value: '/products/brown_sugar_boba.png' },
+    { label: '🍵 Matcha Ice Cream', value: '/products/matcha_ice_cream.png' },
+    { label: '🍹 Mango Fresh Tea', value: '/products/mango_fresh_tea.png' },
+    { label: '🍵 Matcha Latte Boba', value: '/products/matcha_latte_boba.png' },
+    { label: '🍨 Chocolate Sundae', value: '/products/chocolate_sundae.png' },
+    { label: '🧋 Taro Milk Tea', value: '/products/taro_milk_tea.png' },
+    { label: '🍋 Lemon Mint Tea', value: '/products/lemon_mint_tea.png' },
+    { label: '🍦 Vanilla Cone', value: '/products/vanilla_cone.png' },
+    { label: '🍓 Strawberry Smoothie', value: '/products/strawberry_smoothie.png' },
+  ];
+
   useEffect(() => {
     const auth = sessionStorage.getItem('wedrink_admin_auth');
     if (auth === 'true') {
@@ -53,10 +64,8 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Fetch orders and products
   useEffect(() => {
     if (!isAuthenticated) return;
-
     fetchOrders();
     fetchProducts();
   }, [isAuthenticated]);
@@ -112,6 +121,18 @@ export default function AdminPage() {
     } catch (e) {}
   };
 
+  // Convert File to Base64 Data URL for instant preview & upload
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewProduct({ ...newProduct, image: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleAddProduct = async (e) => {
     e.preventDefault();
     if (!newProduct.name || !newProduct.price) {
@@ -162,7 +183,6 @@ export default function AdminPage() {
     return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' UZS';
   };
 
-  // Stats calculation
   const totalRevenue = orders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
   const pendingOrdersCount = orders.filter((o) => o.status === 'Yangi').length;
 
@@ -171,7 +191,6 @@ export default function AdminPage() {
     return o.status === orderFilter;
   });
 
-  // Login Screen if not authenticated
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#00A896] via-[#008075] to-[#112523] flex items-center justify-center p-4">
@@ -186,7 +205,7 @@ export default function AdminPage() {
               WeDrink Admin Panel
             </h1>
             <p className="text-xs text-gray-500 mt-1">
-              Boshqaruv paneliga kirish uchun PAROL / PIN kodni kiriting (Standart: <strong className="text-wedrink-teal">1234</strong>)
+              Boshqaruv paneliga kirish uchun PAROL / PIN kodni kiriting (Parol: <strong className="text-wedrink-teal">1234</strong>)
             </p>
           </div>
 
@@ -577,8 +596,8 @@ export default function AdminPage() {
 
       {/* Add Product Modal */}
       {isAddProductModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 relative">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 relative my-8">
             
             <button
               onClick={() => setIsAddProductModalOpen(false)}
@@ -600,6 +619,8 @@ export default function AdminPage() {
             </div>
 
             <form onSubmit={handleAddProduct} className="space-y-4 text-xs font-bold text-gray-700">
+              
+              {/* Product Name */}
               <div className="space-y-1">
                 <label>Mahsulot Nomi: *</label>
                 <input
@@ -611,6 +632,7 @@ export default function AdminPage() {
                 />
               </div>
 
+              {/* Category & Price */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label>Kategoriya:</label>
@@ -638,17 +660,121 @@ export default function AdminPage() {
                 </div>
               </div>
 
+              {/* IMAGE SELECTION TYPE: Preset vs File Upload vs URL Link */}
+              <div className="space-y-2 pt-1 border-t border-gray-100">
+                <label className="flex items-center gap-1.5 text-wedrink-teal">
+                  <ImageIcon className="w-4 h-4" />
+                  <span>Mahsulot Rasmini Yuklash Usuli:</span>
+                </label>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setImageUploadType('preset')}
+                    className={`py-2 px-2 rounded-xl border text-[11px] font-bold transition-all ${
+                      imageUploadType === 'preset'
+                        ? 'border-wedrink-teal bg-wedrink-teal-ultra text-wedrink-teal'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    🖼️ Tayyor Shablon
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImageUploadType('file')}
+                    className={`py-2 px-2 rounded-xl border text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                      imageUploadType === 'file'
+                        ? 'border-wedrink-teal bg-wedrink-teal-ultra text-wedrink-teal'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Fayl Yuklash</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImageUploadType('url')}
+                    className={`py-2 px-2 rounded-xl border text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                      imageUploadType === 'url'
+                        ? 'border-wedrink-teal bg-wedrink-teal-ultra text-wedrink-teal'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <LinkIcon className="w-3.5 h-3.5" />
+                    <span>Link Havola</span>
+                  </button>
+                </div>
+
+                {/* Option 1: Preset selector */}
+                {imageUploadType === 'preset' && (
+                  <select
+                    value={newProduct.image}
+                    onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none bg-white font-medium"
+                  >
+                    {PRESET_IMAGES.map((img) => (
+                      <option key={img.value} value={img.value}>
+                        {img.label}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
+                {/* Option 2: File upload */}
+                {imageUploadType === 'file' && (
+                  <div className="space-y-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-wedrink-teal-light file:text-wedrink-teal hover:file:bg-wedrink-teal hover:file:text-white transition-all cursor-pointer"
+                    />
+                    <p className="text-[10px] text-gray-400 font-normal">
+                      Kompyuter yoki telefondan rasm tanlang (PNG, JPG, WebP)
+                    </p>
+                  </div>
+                )}
+
+                {/* Option 3: URL Link input */}
+                {imageUploadType === 'url' && (
+                  <input
+                    type="url"
+                    placeholder="https://example.com/rasm.jpg"
+                    value={newProduct.image}
+                    onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-medium"
+                  />
+                )}
+
+                {/* Image Preview Box */}
+                {newProduct.image && (
+                  <div className="flex items-center gap-3 bg-gray-50 p-2.5 rounded-2xl border border-gray-200">
+                    <img
+                      src={newProduct.image}
+                      alt="Preview"
+                      className="w-14 h-14 rounded-xl object-cover border border-gray-200"
+                    />
+                    <div className="text-[11px] text-gray-500 truncate flex-grow">
+                      <span className="font-bold text-gray-700 block">Rasm Ko'rinishi:</span>
+                      <span className="truncate block font-mono text-[10px]">{newProduct.image}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Badge tag */}
               <div className="space-y-1">
                 <label>Nishon (Badge):</label>
                 <input
                   type="text"
-                  placeholder="YANGI! / BESTSELLER"
+                  placeholder="YANGI! / BESTSELLER / SUPER NARX"
                   value={newProduct.badge}
                   onChange={(e) => setNewProduct({ ...newProduct, badge: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-medium"
                 />
               </div>
 
+              {/* Description */}
               <div className="space-y-1">
                 <label>Tavsif (Description):</label>
                 <textarea
