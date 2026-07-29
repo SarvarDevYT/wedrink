@@ -19,7 +19,7 @@ export const metadata = {
   title: "WeDrink Termiz - Muzqaymoqlar, Bubble Tea & Boba Tea",
   description: "WeDrink Termiz rasmiy veb-sayti. Mazali Bubble Tea (Boba Tea), Matchali muzqaymoq, mevali ichimliklar va muzdek smuzilar. Termiz bo'yicha tezkor buyurtma berish.",
   icons: {
-    icon: '/wedrinkphotos/wedrinklogo.jpg',
+    icon: '/wedrinkphotos/wedrinklogo_circle.png',
   },
 };
 

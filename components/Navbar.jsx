@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Menu, X, Phone, Heart, Sparkles, MapPin } from 'lucide-react';
+import { ShoppingBag, Menu, X, Phone } from 'lucide-react';
 
 export default function Navbar({ cartCount, onOpenCart }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -40,11 +40,11 @@ export default function Navbar({ cartCount, onOpenCart }) {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <a href="#hero" className="flex items-center gap-3 group">
-            <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-wedrink-teal shadow-cute group-hover:scale-105 transition-transform duration-300">
+            <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-wedrink-teal shadow-cute group-hover:scale-105 transition-transform duration-300 bg-white flex items-center justify-center p-0.5">
               <img
-                src="/wedrinkphotos/wedrinklogo.jpg"
+                src="/wedrinkphotos/wedrinklogo_circle.png"
                 alt="WeDrink Logo"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain rounded-full"
               />
             </div>
             <div className="flex flex-col">

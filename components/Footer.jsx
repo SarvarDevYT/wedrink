@@ -18,16 +18,16 @@ export default function Footer() {
           <div className="space-y-4">
             <div className="flex items-center gap-3">
               <img
-                src="/wedrinkphotos/wedrinklogo.jpg"
+                src="/wedrinkphotos/wedrinklogo_circle.png"
                 alt="WeDrink Logo"
-                className="w-10 h-10 rounded-full border-2 border-wedrink-teal"
+                className="w-10 h-10 rounded-full border-2 border-wedrink-teal bg-white object-contain"
               />
               <span className="font-fredoka text-2xl font-bold text-wedrink-teal tracking-wide">
                 WEDRINK <span className="text-wedrink-pink text-xs">✦</span>
               </span>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
-              Termiz shahridagi eng mazali Boba Tea, yapon Matchali muzqaymoqlari va tetiklantiruvchi mevali choylar maskani.
+              Termiz shahridagi eng mazali Bubble Tea, yapon Matchali muzqaymoqlari va tetiklantiruvchi mevali choylar maskani.
             </p>
             <div className="text-xs text-wedrink-yellow font-fredoka font-bold">
               "Yangi Ta'm, Yangi Zavq!" 🍦🧋
