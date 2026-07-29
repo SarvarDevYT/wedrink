@@ -9,6 +9,7 @@ import Promotions from '../components/Promotions';
 import Gallery from '../components/Gallery';
 import About from '../components/About';
 import Locations from '../components/Locations';
+import StoreInfo from '../components/StoreInfo';
 import CartDrawer from '../components/CartDrawer';
 import Footer from '../components/Footer';
 
@@ -17,7 +18,6 @@ export default function Home() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Load cart from localStorage after mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem('wedrink_cart');
@@ -27,7 +27,6 @@ export default function Home() {
     } catch (e) {}
   }, []);
 
-  // Save cart to localStorage on changes
   useEffect(() => {
     try {
       localStorage.setItem('wedrink_cart', JSON.stringify(cartItems));
@@ -94,6 +93,9 @@ export default function Home() {
 
         {/* Termiz Branch Locations & Map */}
         <Locations />
+
+        {/* Halal Certificate, Working Hours & Standards Info Section */}
+        <StoreInfo />
       </main>
 
       {/* Footer */}
