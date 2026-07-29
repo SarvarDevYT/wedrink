@@ -63,7 +63,7 @@ export const PRODUCTS = [
     reviewsCount: 115,
     badge: 'TOP',
     badgeColor: 'bg-emerald-600',
-    image: '/products/matcha_latte_boba.png',
+    image: '/products/matcha_latte_boba.jpg',
     description: 'Premium Matcha choyi, tabiy sut va chaynash uchun yoqimli Tapioka boba marvaridlari.',
     calories: '220 kcal',
     customizable: true,
