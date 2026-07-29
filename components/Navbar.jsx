@@ -32,15 +32,16 @@ export default function Navbar({ cartCount, onOpenCart }) {
     <header
       className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/90 backdrop-blur-md shadow-md py-3'
-          : 'bg-gradient-to-b from-black/10 to-transparent py-4'
+          ? 'bg-white/95 backdrop-blur-md shadow-md py-3'
+          : 'bg-gradient-to-b from-black/40 via-black/20 to-transparent py-4'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
+          
           {/* Logo */}
           <a href="#hero" className="flex items-center gap-3 group">
-            <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-wedrink-teal shadow-cute group-hover:scale-105 transition-transform duration-300 bg-white flex items-center justify-center p-0.5">
+            <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/80 shadow-cute group-hover:scale-105 transition-transform duration-300 bg-white flex items-center justify-center p-0.5">
               <img
                 src="/wedrinkphotos/wedrinklogo_circle.png"
                 alt="WeDrink Logo"
@@ -48,22 +49,40 @@ export default function Navbar({ cartCount, onOpenCart }) {
               />
             </div>
             <div className="flex flex-col">
-              <span className="font-fredoka text-2xl font-bold text-wedrink-teal tracking-wide flex items-center gap-1">
+              <span
+                className={`font-fredoka text-2xl font-extrabold tracking-wide flex items-center gap-1 transition-colors duration-300 ${
+                  isScrolled ? 'text-wedrink-teal' : 'text-white drop-shadow-md'
+                }`}
+              >
                 WEDRINK <span className="text-wedrink-pink text-sm">✦</span>
               </span>
-              <span className="text-[10px] font-semibold tracking-wider text-wedrink-gray uppercase -mt-1">
+              <span
+                className={`text-[10px] font-bold tracking-wider uppercase -mt-1 transition-colors duration-300 ${
+                  isScrolled ? 'text-wedrink-gray' : 'text-teal-100 drop-shadow-sm'
+                }`}
+              >
                 Termiz • Ice Cream & Tea
               </span>
             </div>
           </a>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-1 bg-white/80 backdrop-blur-sm px-4 py-1.5 rounded-full border border-wedrink-teal/15 shadow-sm">
+          <nav
+            className={`hidden md:flex items-center gap-1 px-4 py-1.5 rounded-full border shadow-sm transition-all duration-300 ${
+              isScrolled
+                ? 'bg-white/80 backdrop-blur-sm border-wedrink-teal/15'
+                : 'bg-black/20 backdrop-blur-md border-white/20'
+            }`}
+          >
             {navLinks.map((link) => (
               <a
                 key={link.name}
                 href={link.href}
-                className="px-4 py-2 rounded-full text-sm font-semibold text-wedrink-dark hover:text-wedrink-teal hover:bg-wedrink-teal-ultra transition-all duration-200"
+                className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 ${
+                  isScrolled
+                    ? 'text-wedrink-dark hover:text-wedrink-teal hover:bg-wedrink-teal-ultra'
+                    : 'text-white hover:bg-white/20'
+                }`}
               >
                 {link.name}
               </a>
@@ -77,7 +96,11 @@ export default function Navbar({ cartCount, onOpenCart }) {
               href="https://t.me/wedrink_termiz"
               target="_blank"
               rel="noreferrer"
-              className="hidden lg:flex items-center gap-2 text-xs font-bold text-wedrink-teal bg-wedrink-teal-light hover:bg-wedrink-teal hover:text-white px-3 py-2 rounded-full transition-all duration-200"
+              className={`hidden lg:flex items-center gap-2 text-xs font-bold px-3.5 py-2 rounded-full transition-all duration-200 ${
+                isScrolled
+                  ? 'text-wedrink-teal bg-wedrink-teal-light hover:bg-wedrink-teal hover:text-white'
+                  : 'text-white bg-white/20 hover:bg-white/30 backdrop-blur-md border border-white/30'
+              }`}
             >
               <Phone className="w-3.5 h-3.5" />
               <span>@wedrink_termiz</span>
@@ -86,12 +109,12 @@ export default function Navbar({ cartCount, onOpenCart }) {
             {/* Cart Button */}
             <button
               onClick={onOpenCart}
-              className="relative flex items-center justify-center bg-wedrink-teal hover:bg-wedrink-teal-dark text-white p-2.5 sm:px-4 sm:py-2.5 rounded-full font-semibold shadow-cute hover:shadow-cute-lg transition-all duration-300 hover:scale-105 active:scale-95"
+              className="relative flex items-center justify-center bg-wedrink-pink hover:bg-wedrink-pink-hover text-white p-2.5 sm:px-4 sm:py-2.5 rounded-full font-semibold shadow-pink-glow hover:shadow-lg transition-all duration-300 hover:scale-105 active:scale-95"
             >
               <ShoppingBag className="w-5 h-5 sm:mr-1.5" />
-              <span className="hidden sm:inline text-sm">Savatcha</span>
+              <span className="hidden sm:inline text-sm font-fredoka font-bold">Savatcha</span>
               {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-wedrink-pink text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-bounce-slow">
+                <span className="absolute -top-1.5 -right-1.5 bg-wedrink-yellow text-wedrink-dark text-xs font-black w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-bounce-slow">
                   {cartCount}
                 </span>
               )}
@@ -100,7 +123,9 @@ export default function Navbar({ cartCount, onOpenCart }) {
             {/* Mobile menu toggle */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-full text-wedrink-dark hover:bg-gray-100 focus:outline-none"
+              className={`md:hidden p-2 rounded-full transition-colors ${
+                isScrolled ? 'text-wedrink-dark hover:bg-gray-100' : 'text-white hover:bg-white/20'
+              }`}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
