@@ -1,8 +1,9 @@
 /** @type {import('tailwindcss').Config} */
-export default {
+module.exports = {
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -22,8 +23,8 @@ export default {
         }
       },
       fontFamily: {
-        fredoka: ['Fredoka', 'sans-serif'],
-        sans: ['Outfit', 'Inter', 'sans-serif'],
+        fredoka: ['var(--font-fredoka)', 'cursive', 'sans-serif'],
+        sans: ['var(--font-outfit)', 'Inter', 'sans-serif'],
       },
       boxShadow: {
         'cute': '0 10px 25px -5px rgba(0, 168, 150, 0.25)',
