@@ -1,90 +1,87 @@
 import { NextResponse } from 'next/server';
-
-// In-memory orders store (backed by fallback default demo orders)
-let orders = [
-  {
-    id: 'WD-849201',
-    customerName: 'Sardorbek Karimov',
-    customerPhone: '+998 90 123 45 67',
-    orderType: 'delivery',
-    address: 'Termiz sh., At-Termiziy k., 12-uy',
-    items: [
-      {
-        productName: 'Klassik Brown Sugar Bubble Tea',
-        quantity: 2,
-        size: 'Katta (700ml)',
-        sugar: '70%',
-        ice: '50%',
-        toppings: ['Tapioka Boba'],
-        totalPrice: 56000,
-      },
-      {
-        productName: 'Matchali Muzqaymoq',
-        quantity: 1,
-        size: 'Standart',
-        totalPrice: 15000,
-      }
-    ],
-    subtotal: 71000,
-    deliveryFee: 10000,
-    grandTotal: 81000,
-    status: 'Yangi',
-    createdAt: new Date(Date.now() - 1000 * 60 * 25).toISOString(),
-  },
-  {
-    id: 'WD-392015',
-    customerName: 'Madina Alimova',
-    customerPhone: '+998 91 987 65 43',
-    orderType: 'pickup',
-    address: 'Markaziy Park Filiali (At-Termiziy k.)',
-    items: [
-      {
-        productName: 'Matcha Latte Bubble Tea',
-        quantity: 1,
-        size: 'O\'rtacha (500ml)',
-        sugar: '100%',
-        ice: '100%',
-        toppings: ['Sutli Pudding'],
-        totalPrice: 32000,
-      }
-    ],
-    subtotal: 32000,
-    deliveryFee: 0,
-    grandTotal: 32000,
-    status: 'Tayyorlanmoqda',
-    createdAt: new Date(Date.now() - 1000 * 60 * 85).toISOString(),
-  }
-];
+import pool from '../../../lib/db';
 
 export async function GET() {
-  return NextResponse.json({ success: true, orders });
+  try {
+    const { rows } = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+
+    const formattedOrders = rows.map((o) => ({
+      id: o.id,
+      customerName: o.customer_name,
+      customerPhone: o.customer_phone,
+      orderType: o.order_type,
+      address: o.address,
+      items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items,
+      subtotal: Number(o.subtotal),
+      deliveryFee: Number(o.delivery_fee),
+      grandTotal: Number(o.grand_total),
+      status: o.status,
+      createdAt: o.created_at,
+    }));
+
+    return NextResponse.json({ success: true, orders: formattedOrders });
+  } catch (error) {
+    console.error('Supabase Orders GET error:', error);
+    return NextResponse.json({ success: true, orders: [] });
+  }
 }
 
 export async function POST(request) {
   try {
     const body = await request.json();
-    const newOrder = {
-      id: 'WD-' + Math.floor(100000 + Math.random() * 900000),
-      customerName: body.customerName || 'Noma\'lum',
-      customerPhone: body.customerPhone || '+998 90 000 00 00',
-      orderType: body.orderType || 'delivery',
-      address: body.address || 'Termiz',
-      items: body.items || [],
-      subtotal: body.subtotal || 0,
-      deliveryFee: body.deliveryFee || 0,
-      grandTotal: body.grandTotal || 0,
-      status: 'Yangi',
-      createdAt: new Date().toISOString(),
-    };
+    const orderId = 'WD-' + Math.floor(100000 + Math.random() * 900000);
+    const customerName = body.customerName || 'Noma\'lum';
+    const customerPhone = body.customerPhone || '+998 90 000 00 00';
+    const orderType = body.orderType || 'delivery';
+    const address = body.address || 'Termiz';
+    const items = JSON.stringify(body.items || []);
+    const subtotal = Number(body.subtotal) || 0;
+    const deliveryFee = Number(body.deliveryFee) || 0;
+    const grandTotal = Number(body.grandTotal) || 0;
+    const status = 'Yangi';
 
-    orders.unshift(newOrder);
+    const insertQuery = `
+      INSERT INTO orders (id, customer_name, customer_phone, order_type, address, items, subtotal, delivery_fee, grand_total, status)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING *;
+    `;
+
+    await pool.query(insertQuery, [
+      orderId,
+      customerName,
+      customerPhone,
+      orderType,
+      address,
+      items,
+      subtotal,
+      deliveryFee,
+      grandTotal,
+      status,
+    ]);
+
+    const { rows } = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+    const formattedOrders = rows.map((o) => ({
+      id: o.id,
+      customerName: o.customer_name,
+      customerPhone: o.customer_phone,
+      orderType: o.order_type,
+      address: o.address,
+      items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items,
+      subtotal: Number(o.subtotal),
+      deliveryFee: Number(o.delivery_fee),
+      grandTotal: Number(o.grand_total),
+      status: o.status,
+      createdAt: o.created_at,
+    }));
 
     return NextResponse.json({
       success: true,
-      message: 'Buyurtma saqlandi!',
-      order: newOrder,
+      message: 'Buyurtma Supabase bazasiga saqlandi!',
+      orderId,
+      orders: formattedOrders,
     });
   } catch (error) {
+    console.error('Supabase Orders POST error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
@@ -94,14 +91,26 @@ export async function PATCH(request) {
     const body = await request.json();
     const { orderId, newStatus } = body;
 
-    const order = orders.find((o) => o.id === orderId);
-    if (order) {
-      order.status = newStatus;
-      return NextResponse.json({ success: true, order });
-    }
+    await pool.query('UPDATE orders SET status = $1 WHERE id = $2', [newStatus, orderId]);
 
-    return NextResponse.json({ success: false, message: 'Buyurtma topilmadi' }, { status: 404 });
+    const { rows } = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+    const formattedOrders = rows.map((o) => ({
+      id: o.id,
+      customerName: o.customer_name,
+      customerPhone: o.customer_phone,
+      orderType: o.order_type,
+      address: o.address,
+      items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items,
+      subtotal: Number(o.subtotal),
+      deliveryFee: Number(o.delivery_fee),
+      grandTotal: Number(o.grand_total),
+      status: o.status,
+      createdAt: o.created_at,
+    }));
+
+    return NextResponse.json({ success: true, orders: formattedOrders });
   } catch (error) {
+    console.error('Supabase Orders PATCH error:', error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
