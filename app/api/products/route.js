@@ -2,11 +2,12 @@ import { NextResponse } from 'next/server';
 import pool from '../../../lib/db';
 import { PRODUCTS as initialProducts } from '../../../data/products';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const { rows } = await pool.query('SELECT * FROM products ORDER BY id ASC');
     
-    // Fallback if empty
     if (rows.length === 0) {
       return NextResponse.json({ success: true, products: initialProducts });
     }
