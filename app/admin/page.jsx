@@ -1,0 +1,686 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import {
+  Lock,
+  ShoppingBag,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Clock,
+  Truck,
+  Store,
+  DollarSign,
+  Package,
+  TrendingUp,
+  LogOut,
+  ArrowLeft,
+  X,
+  Sparkles,
+  Phone,
+  Filter
+} from 'lucide-react';
+import { PRODUCTS as defaultProducts } from '../../data/products';
+
+export default function AdminPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState(false);
+
+  const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'products'
+  const [orderFilter, setOrderFilter] = useState('all'); // 'all' | 'Yangi' | 'Tayyorlanmoqda' | 'Yetkazildi'
+
+  const [orders, setOrders] = useState([]);
+  const [products, setProducts] = useState(defaultProducts);
+
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    category: 'boba',
+    price: '',
+    badge: 'YANGI',
+    badgeColor: 'bg-wedrink-pink',
+    image: '/products/brown_sugar_boba.png',
+    description: '',
+    calories: '200 kcal',
+  });
+
+  // Check auth from sessionStorage
+  useEffect(() => {
+    const auth = sessionStorage.getItem('wedrink_admin_auth');
+    if (auth === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  // Fetch orders and products
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    fetchOrders();
+    fetchProducts();
+  }, [isAuthenticated]);
+
+  const fetchOrders = async () => {
+    try {
+      const res = await fetch('/api/orders');
+      const data = await res.json();
+      if (data.success && data.orders) {
+        setOrders(data.orders);
+      }
+    } catch (e) {}
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('/api/products');
+      const data = await res.json();
+      if (data.success && data.products) {
+        setProducts(data.products);
+      }
+    } catch (e) {}
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (pin === '1234' || pin === 'admin') {
+      setIsAuthenticated(true);
+      sessionStorage.setItem('wedrink_admin_auth', 'true');
+      setPinError(false);
+    } else {
+      setPinError(true);
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem('wedrink_admin_auth');
+    setPin('');
+  };
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      await fetch('/api/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, newStatus }),
+      });
+
+      setOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+      );
+    } catch (e) {}
+  };
+
+  const handleAddProduct = async (e) => {
+    e.preventDefault();
+    if (!newProduct.name || !newProduct.price) {
+      alert('Iltimos, mahsulot nomi va narxini kiriting!');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newProduct),
+      });
+
+      const data = await res.json();
+      if (data.success && data.products) {
+        setProducts(data.products);
+        setIsAddProductModalOpen(false);
+        setNewProduct({
+          name: '',
+          category: 'boba',
+          price: '',
+          badge: 'YANGI',
+          badgeColor: 'bg-wedrink-pink',
+          image: '/products/brown_sugar_boba.png',
+          description: '',
+          calories: '200 kcal',
+        });
+      }
+    } catch (e) {}
+  };
+
+  const handleDeleteProduct = async (id) => {
+    if (!confirm('Ushbu mahsulotni o\'chirmoqchimisiz?')) return;
+
+    try {
+      const res = await fetch(`/api/products?id=${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success && data.products) {
+        setProducts(data.products);
+      }
+    } catch (e) {}
+  };
+
+  const formatPrice = (price) => {
+    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' UZS';
+  };
+
+  // Stats calculation
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.grandTotal || 0), 0);
+  const pendingOrdersCount = orders.filter((o) => o.status === 'Yangi').length;
+
+  const filteredOrders = orders.filter((o) => {
+    if (orderFilter === 'all') return true;
+    return o.status === orderFilter;
+  });
+
+  // Login Screen if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#00A896] via-[#008075] to-[#112523] flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-white/20 space-y-6 text-center">
+          
+          <div className="w-16 h-16 rounded-full bg-wedrink-teal-light text-wedrink-teal flex items-center justify-center mx-auto shadow-inner">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div>
+            <h1 className="font-fredoka text-3xl font-extrabold text-wedrink-dark">
+              WeDrink Admin Panel
+            </h1>
+            <p className="text-xs text-gray-500 mt-1">
+              Boshqaruv paneliga kirish uchun PAROL / PIN kodni kiriting (Standart: <strong className="text-wedrink-teal">1234</strong>)
+            </p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-4 text-left">
+            <div>
+              <label className="text-xs font-bold text-gray-600 block mb-1">
+                Admin Paroli:
+              </label>
+              <input
+                type="password"
+                placeholder="****"
+                value={pin}
+                onChange={(e) => {
+                  setPin(e.target.value);
+                  setPinError(false);
+                }}
+                className={`w-full px-4 py-3 rounded-2xl border text-center text-lg font-mono font-bold tracking-widest outline-none transition-all ${
+                  pinError
+                    ? 'border-wedrink-pink bg-wedrink-pink-light text-wedrink-pink'
+                    : 'border-gray-200 focus:border-wedrink-teal focus:ring-4 focus:ring-wedrink-teal/10'
+                }`}
+              />
+              {pinError && (
+                <p className="text-xs font-bold text-wedrink-pink mt-1.5 text-center">
+                  Xato parol! Qaytadan urinib ko'ring (Parol: 1234).
+                </p>
+              )}
+            </div>
+
+            <button
+              type="submit"
+              className="w-full bg-wedrink-teal hover:bg-wedrink-teal-dark text-white font-fredoka font-bold text-base py-3.5 rounded-2xl shadow-cute transition-all"
+            >
+              Panelga Kirish
+            </button>
+          </form>
+
+          <a
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-wedrink-teal pt-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Asosiy saytga qaytish</span>
+          </a>
+
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#F6FAF9] text-wedrink-dark font-sans pb-16">
+      
+      {/* Top Admin Header Bar */}
+      <header className="bg-wedrink-dark text-white sticky top-0 z-30 shadow-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          
+          <div className="flex items-center gap-3">
+            <img
+              src="/wedrinkphotos/wedrinklogo_circle.png"
+              alt="WeDrink Logo"
+              className="w-10 h-10 rounded-full border-2 border-wedrink-teal bg-white"
+            />
+            <div>
+              <div className="font-fredoka text-xl font-bold text-wedrink-teal leading-none">
+                WEDRINK <span className="text-wedrink-yellow text-xs">ADMIN</span>
+              </div>
+              <span className="text-[10px] text-gray-400 font-medium">Boshqaruv & Analitika Paneli</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <a
+              href="/"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-gray-300 hover:text-white bg-gray-800 px-3.5 py-2 rounded-xl transition-all"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Saytga O'tish</span>
+            </a>
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-1.5 text-xs font-bold text-wedrink-pink bg-wedrink-pink-light hover:bg-wedrink-pink hover:text-white px-3.5 py-2 rounded-xl transition-all"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Chiqish</span>
+            </button>
+          </div>
+
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+        
+        {/* Stats Grid Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          
+          {/* Total Revenue */}
+          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl font-bold">
+              💰
+            </div>
+            <div>
+              <span className="text-xs font-bold text-gray-400 block uppercase">Jami Tushum</span>
+              <span className="font-fredoka text-2xl font-extrabold text-wedrink-teal">
+                {formatPrice(totalRevenue)}
+              </span>
+            </div>
+          </div>
+
+          {/* Total Orders */}
+          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-wedrink-teal-light text-wedrink-teal flex items-center justify-center text-xl font-bold">
+              🛍️
+            </div>
+            <div>
+              <span className="text-xs font-bold text-gray-400 block uppercase">Jami Buyurtmalar</span>
+              <span className="font-fredoka text-2xl font-extrabold text-wedrink-dark">
+                {orders.length} ta
+              </span>
+            </div>
+          </div>
+
+          {/* Pending Orders */}
+          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-pink-100 text-wedrink-pink flex items-center justify-center text-xl font-bold">
+              🔴
+            </div>
+            <div>
+              <span className="text-xs font-bold text-gray-400 block uppercase">Yangi Buyurtmalar</span>
+              <span className="font-fredoka text-2xl font-extrabold text-wedrink-pink">
+                {pendingOrdersCount} ta
+              </span>
+            </div>
+          </div>
+
+          {/* Total Products */}
+          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold">
+              🍦
+            </div>
+            <div>
+              <span className="text-xs font-bold text-gray-400 block uppercase">Menyu Mahsulotlari</span>
+              <span className="font-fredoka text-2xl font-extrabold text-amber-600">
+                {products.length} tur
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Tab Switcher & Actions Bar */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
+          
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-fredoka font-bold text-sm transition-all ${
+                activeTab === 'orders'
+                  ? 'bg-wedrink-teal text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              📦 Buyurtmalar ({orders.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('products')}
+              className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-fredoka font-bold text-sm transition-all ${
+                activeTab === 'products'
+                  ? 'bg-wedrink-teal text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              🥤 Menyuni Boshqarish ({products.length})
+            </button>
+          </div>
+
+          {activeTab === 'products' && (
+            <button
+              onClick={() => setIsAddProductModalOpen(true)}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-wedrink-pink hover:bg-wedrink-pink-hover text-white font-fredoka font-bold text-sm px-5 py-3 rounded-xl shadow-pink-glow transition-all"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Yangi Mahsulot Qo'shish</span>
+            </button>
+          )}
+
+        </div>
+
+        {/* TAB 1: ORDERS MANAGEMENT */}
+        {activeTab === 'orders' && (
+          <div className="space-y-6">
+            
+            {/* Filter Pills */}
+            <div className="flex items-center gap-2 overflow-x-auto pb-2">
+              <span className="text-xs font-bold text-gray-500 flex items-center gap-1 mr-2">
+                <Filter className="w-4 h-4" />
+                <span>Filtr:</span>
+              </span>
+              {[
+                { id: 'all', label: 'Hamma buyurtmalar' },
+                { id: 'Yangi', label: '🔴 Yangi' },
+                { id: 'Tayyorlanmoqda', label: '🟡 Tayyorlanmoqda' },
+                { id: 'Yetkazildi', label: '🟢 Yetkazildi' },
+              ].map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => setOrderFilter(f.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                    orderFilter === f.id
+                      ? 'bg-wedrink-dark text-white'
+                      : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Orders Cards Grid */}
+            {filteredOrders.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {filteredOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-all space-y-4 relative flex flex-col justify-between"
+                  >
+                    
+                    {/* Header */}
+                    <div className="flex items-start justify-between border-b border-gray-100 pb-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-fredoka text-lg font-bold text-wedrink-teal">
+                            {order.id}
+                          </span>
+                          <span
+                            className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase ${
+                              order.orderType === 'delivery'
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-purple-100 text-purple-700'
+                            }`}
+                          >
+                            {order.orderType === 'delivery' ? '🚚 Delivery' : '🏪 Pickup'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-gray-400 font-medium">
+                          {new Date(order.createdAt).toLocaleString('uz-UZ')}
+                        </span>
+                      </div>
+
+                      {/* Status Dropdown */}
+                      <select
+                        value={order.status}
+                        onChange={(e) => handleStatusChange(order.id, e.target.value)}
+                        className={`text-xs font-bold px-3 py-1.5 rounded-xl border outline-none cursor-pointer ${
+                          order.status === 'Yangi'
+                            ? 'bg-pink-100 border-pink-300 text-wedrink-pink'
+                            : order.status === 'Tayyorlanmoqda'
+                            ? 'bg-amber-100 border-amber-300 text-amber-700'
+                            : 'bg-emerald-100 border-emerald-300 text-emerald-700'
+                        }`}
+                      >
+                        <option value="Yangi">🔴 Yangi</option>
+                        <option value="Tayyorlanmoqda">🟡 Tayyorlanmoqda</option>
+                        <option value="Yetkazildi">🟢 Yetkazildi</option>
+                      </select>
+                    </div>
+
+                    {/* Customer Info */}
+                    <div className="bg-gray-50 p-3 rounded-2xl space-y-1 text-xs font-medium">
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Mijoz:</span>
+                        <strong className="text-wedrink-dark">{order.customerName}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Telefon:</span>
+                        <a href={`tel:${order.customerPhone}`} className="font-bold text-wedrink-teal hover:underline">
+                          {order.customerPhone}
+                        </a>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">Manzil/Filial:</span>
+                        <span className="text-gray-800 font-bold truncate max-w-[200px]">{order.address}</span>
+                      </div>
+                    </div>
+
+                    {/* Items List */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold text-gray-400 block uppercase">Buyurtma tarkibi:</span>
+                      <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                        {order.items.map((item, idx) => (
+                          <div key={idx} className="text-xs bg-wedrink-teal-ultra p-2.5 rounded-xl space-y-0.5">
+                            <div className="flex justify-between font-bold text-wedrink-dark">
+                              <span>{item.productName || item.product?.name} (x{item.quantity})</span>
+                              <span>{formatPrice(item.totalPrice)}</span>
+                            </div>
+                            <div className="text-[11px] text-gray-500">
+                              Hajmi: {item.size?.name || item.size} {item.sugar && `• Shakar: ${item.sugar}`} {item.ice && `• Muz: ${item.ice}`}
+                            </div>
+                            {item.toppings && item.toppings.length > 0 && (
+                              <div className="text-[11px] text-wedrink-teal font-semibold">
+                                + {item.toppings.map((t) => typeof t === 'string' ? t : t.name).join(', ')}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Footer Total */}
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                      <span className="text-xs font-bold text-gray-500">Jami To'lov:</span>
+                      <span className="font-fredoka text-xl font-extrabold text-wedrink-teal">
+                        {formatPrice(order.grandTotal)}
+                      </span>
+                    </div>
+
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-3xl p-12 text-center border border-gray-100">
+                <div className="text-5xl mb-3">📦</div>
+                <h3 className="font-fredoka text-xl font-bold text-gray-800">
+                  Hozircha ushbu bo'limda buyurtma yo'q
+                </h3>
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* TAB 2: PRODUCTS MANAGEMENT */}
+        {activeTab === 'products' && (
+          <div className="space-y-6">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((prod) => (
+                <div
+                  key={prod.id}
+                  className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div className="relative h-48 rounded-2xl overflow-hidden bg-wedrink-teal-ultra mb-4">
+                    <img
+                      src={prod.image}
+                      alt={prod.name}
+                      className="w-full h-full object-cover"
+                    />
+                    {prod.badge && (
+                      <span className="absolute top-3 left-3 bg-wedrink-pink text-white text-xs font-black px-3 py-1 rounded-full shadow-md">
+                        {prod.badge}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => handleDeleteProduct(prod.id)}
+                      className="absolute top-3 right-3 bg-white/90 text-wedrink-pink hover:bg-wedrink-pink hover:text-white p-2 rounded-full shadow-md transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2 flex-grow flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-fredoka text-lg font-bold text-wedrink-dark">
+                        {prod.name}
+                      </h4>
+                      <p className="text-xs text-gray-500 line-clamp-2 mt-1 font-medium">
+                        {prod.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                      <span className="text-xs font-bold text-gray-400 uppercase">Narx</span>
+                      <span className="font-fredoka text-lg font-extrabold text-wedrink-teal">
+                        {formatPrice(prod.price)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        )}
+
+      </div>
+
+      {/* Add Product Modal */}
+      {isAddProductModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 relative">
+            
+            <button
+              onClick={() => setIsAddProductModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-wedrink-pink p-1"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-wedrink-pink-light text-wedrink-pink flex items-center justify-center font-bold text-lg">
+                ✨
+              </div>
+              <div>
+                <h3 className="font-fredoka text-2xl font-bold text-wedrink-dark">
+                  Yangi Mahsulot Qo'shish
+                </h3>
+                <p className="text-xs text-gray-500">Menyuga yangi ichimlik yoki muzqaymoq kiriting</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddProduct} className="space-y-4 text-xs font-bold text-gray-700">
+              <div className="space-y-1">
+                <label>Mahsulot Nomi: *</label>
+                <input
+                  type="text"
+                  placeholder="Masalan: Qulupnayli Boba Shake"
+                  value={newProduct.name}
+                  onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label>Kategoriya:</label>
+                  <select
+                    value={newProduct.category}
+                    onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none bg-white font-medium"
+                  >
+                    <option value="icecream">🍦 Muzqaymoqlar</option>
+                    <option value="boba">🧋 Bubble Tea</option>
+                    <option value="fruit">🍹 Mevali Ichimliklar</option>
+                    <option value="coffee">☕ Matcha & Qahva</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label>Narxi (UZS): *</label>
+                  <input
+                    type="number"
+                    placeholder="25000"
+                    value={newProduct.price}
+                    onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-bold"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label>Nishon (Badge):</label>
+                <input
+                  type="text"
+                  placeholder="YANGI! / BESTSELLER"
+                  value={newProduct.badge}
+                  onChange={(e) => setNewProduct({ ...newProduct, badge: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-medium"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label>Tavsif (Description):</label>
+                <textarea
+                  rows={2}
+                  placeholder="Mahsulot haqida qisqacha ma'lumot..."
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-medium"
+                />
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddProductModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 font-bold text-gray-600 hover:bg-gray-50"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-wedrink-teal text-white font-fredoka font-bold shadow-cute hover:bg-wedrink-teal-dark"
+                >
+                  Saqlash va Qo'shish
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

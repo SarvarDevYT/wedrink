@@ -37,17 +37,28 @@ export default function CartDrawer({ isOpen, onClose, cartItems, onUpdateQuantit
       return;
     }
 
-    // Call Next.js API Route for order processing / payment initialization!
+    // Call Next.js API Route to save order for Admin Panel
     try {
-      await fetch('/api/checkout', {
+      await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: cartItems,
           customerName,
           customerPhone,
           orderType,
           address: orderType === 'delivery' ? address : selectedBranch,
+          items: cartItems.map((item) => ({
+            productName: item.product.name,
+            quantity: item.quantity,
+            size: item.size.name,
+            sugar: item.sugar,
+            ice: item.ice,
+            toppings: item.toppings.map((t) => t.name),
+            note: item.note,
+            totalPrice: item.totalPrice,
+          })),
+          subtotal,
+          deliveryFee,
           grandTotal,
         }),
       });
@@ -138,7 +149,7 @@ export default function CartDrawer({ isOpen, onClose, cartItems, onUpdateQuantit
                   Buyurtmangiz Yuborildi!
                 </h3>
                 <p className="text-sm text-gray-600">
-                  Buyurtmangiz tafsilotlari Telegram orqali menejerimizga yuborildi. Operatorlarimiz tez orada aloqaga chiqishadi.
+                  Buyurtmangiz tafsilotlari Telegram hamda Admin panelimizga yuborildi. Operatorlarimiz tez orada aloqaga chiqishadi.
                 </p>
                 <button
                   onClick={() => {
@@ -158,7 +169,7 @@ export default function CartDrawer({ isOpen, onClose, cartItems, onUpdateQuantit
                   Savatchangiz bo'sh
                 </h3>
                 <p className="text-xs text-gray-500 max-w-xs mx-auto">
-                  Menyudan o'zingizga yoqqan Boba Tea yoki muzqaymoqlarni tanlang va savatchaga qo'shing!
+                  Menyudan o'zingizga yoqqan Bubble Tea yoki muzqaymoqlarni tanlang va savatchaga qo'shing!
                 </p>
                 <button
                   onClick={onClose}

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Menu, X, Phone } from 'lucide-react';
+import { ShoppingBag, Menu, X, Phone, Lock } from 'lucide-react';
 
 export default function Navbar({ cartCount, onOpenCart }) {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -20,12 +20,12 @@ export default function Navbar({ cartCount, onOpenCart }) {
   }, []);
 
   const navLinks = [
-    { name: 'Bosh sahifa', href: '#hero' },
-    { name: 'Menyu', href: '#menu' },
-    { name: 'Aksiyalar', href: '#promotions' },
-    { name: 'Galereya', href: '#gallery' },
-    { name: 'Biz haqimizda', href: '#about' },
-    { name: 'Filiallar', href: '#locations' },
+    { name: 'Bosh sahifa', href: '/#hero' },
+    { name: 'Menyu', href: '/#menu' },
+    { name: 'Aksiyalar', href: '/#promotions' },
+    { name: 'Galereya', href: '/#gallery' },
+    { name: 'Biz haqimizda', href: '/#about' },
+    { name: 'Filiallar', href: '/#locations' },
   ];
 
   return (
@@ -40,7 +40,7 @@ export default function Navbar({ cartCount, onOpenCart }) {
         <div className="flex items-center justify-between">
           
           {/* Logo */}
-          <a href="#hero" className="flex items-center gap-3 group">
+          <a href="/#hero" className="flex items-center gap-3 group">
             <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-white/80 shadow-cute group-hover:scale-105 transition-transform duration-300 bg-white flex items-center justify-center p-0.5">
               <img
                 src="/wedrinkphotos/wedrinklogo_circle.png"
@@ -91,6 +91,19 @@ export default function Navbar({ cartCount, onOpenCart }) {
 
           {/* Actions */}
           <div className="flex items-center gap-3">
+            {/* Admin Panel Quick Link */}
+            <a
+              href="/admin"
+              className={`hidden sm:flex items-center gap-1.5 text-xs font-bold px-3 py-2 rounded-full transition-all duration-200 ${
+                isScrolled
+                  ? 'text-gray-700 bg-gray-100 hover:bg-wedrink-teal hover:text-white'
+                  : 'text-white bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/20'
+              }`}
+            >
+              <Lock className="w-3.5 h-3.5" />
+              <span>Admin</span>
+            </a>
+
             {/* Telegram Contact quick button */}
             <a
               href="https://t.me/wedrink_termiz"
@@ -147,17 +160,14 @@ export default function Navbar({ cartCount, onOpenCart }) {
                 {link.name}
               </a>
             ))}
-            <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
-              <a
-                href="https://t.me/wedrink_termiz"
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center justify-center gap-2 text-sm font-bold text-wedrink-teal bg-wedrink-teal-ultra py-3 rounded-xl"
-              >
-                <Phone className="w-4 h-4" />
-                Telegram: @wedrink_termiz
-              </a>
-            </div>
+            <a
+              href="/admin"
+              onClick={() => setMobileMenuOpen(false)}
+              className="px-4 py-2.5 rounded-xl font-semibold text-wedrink-pink hover:bg-pink-50 transition-all flex items-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Admin Panel</span>
+            </a>
           </div>
         </div>
       )}
