@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { ArrowRight, Sparkles, Heart, Star, IceCream, Compass } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 export default function Hero({ onOpenMenu }) {
   return (
@@ -38,7 +38,7 @@ export default function Hero({ onOpenMenu }) {
             <h1 className="font-fredoka text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.1] text-white drop-shadow-sm">
               Termizning Eng Mazali <br />
               <span className="text-wedrink-yellow underline decoration-wedrink-pink decoration-wavy decoration-2">
-                Boba Tea
+                Bubble Tea
               </span> &{' '}
               <span className="text-pink-200">
                 Muzqaymoqlari!
@@ -47,7 +47,7 @@ export default function Hero({ onOpenMenu }) {
 
             {/* Subtext */}
             <p className="text-lg sm:text-xl text-teal-50 max-w-2xl mx-auto lg:mx-0 font-medium leading-relaxed">
-              Yaponiyaning haqiqiy Matchali muzqaymoqlari, karamelli tapioka Boba choylari va yangi uzilgan mevali salqin ichimliklar — kayfiyatingiz uchun tayyorlandi!
+              Yaponiyaning haqiqiy Matchali muzqaymoqlari, karamelli tapioka Bubble Tea (Boba) choylari va yangi uzilgan mevali salqin ichimliklar — kayfiyatingiz uchun tayyorlandi!
             </p>
 
             {/* Buttons */}
@@ -132,7 +132,7 @@ export default function Hero({ onOpenMenu }) {
                   <img src="/wedrinkphotos/5426900635921094963_121.jpg" alt="Boba" className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <div className="font-fredoka text-xs font-bold text-gray-800">Brown Sugar Boba</div>
+                  <div className="font-fredoka text-xs font-bold text-gray-800">Brown Sugar Bubble Tea</div>
                   <div className="text-[11px] text-emerald-600 font-bold">⭐⭐⭐⭐⭐ 5.0</div>
                 </div>
               </div>

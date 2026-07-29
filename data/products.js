@@ -2,7 +2,7 @@ export const CATEGORIES = [
   { id: 'all', name: 'Hamma ta\'mlar', icon: '✨' },
   { id: 'popular', name: '🔥 Top Ta\'mlar', icon: '🔥' },
   { id: 'icecream', name: '🍦 Muzqaymoqlar', icon: '🍦' },
-  { id: 'boba', name: '🧋 Boba & Milk Tea', icon: '🧋' },
+  { id: 'boba', name: '🧋 Bubble Tea & Milk Tea', icon: '🧋' },
   { id: 'fruit', name: '🍹 Mevali Ichimliklar', icon: '🍹' },
   { id: 'coffee', name: '☕ Matcha & Qahva', icon: '☕' },
 ];
@@ -25,7 +25,7 @@ export const PRODUCTS = [
   },
   {
     id: 2,
-    name: 'Klassik Brown Sugar Boba Tea',
+    name: 'Klassik Brown Sugar Bubble Tea',
     category: 'boba',
     popular: true,
     price: 24000,
@@ -34,7 +34,7 @@ export const PRODUCTS = [
     badge: 'BESTSELLER',
     badgeColor: 'bg-wedrink-teal',
     image: '/wedrinkphotos/5426900635921094963_121.jpg',
-    description: 'Qora shakar karameli, yangi tayyorlangan marvarid boba shariklari va mayin qaymoqli sutli choy.',
+    description: 'Qora shakar karameli, yangi tayyorlangan marvarid boba shariklari va mayin qaymoqli sutli Bubble Tea.',
     calories: '290 kcal',
     customizable: true,
   },
@@ -55,7 +55,7 @@ export const PRODUCTS = [
   },
   {
     id: 4,
-    name: 'Matcha Latte Boba',
+    name: 'Matcha Latte Bubble Tea',
     category: 'coffee',
     popular: true,
     price: 28000,
@@ -83,7 +83,7 @@ export const PRODUCTS = [
   },
   {
     id: 6,
-    name: 'Taro Milk Tea Boba',
+    name: 'Taro Milk Tea (Bubble Tea)',
     category: 'boba',
     popular: false,
     price: 25000,
@@ -138,7 +138,7 @@ export const PRODUCTS = [
 ];
 
 export const TOPPINGS = [
-  { id: 'boba', name: 'Tapioka Boba', price: 4000 },
+  { id: 'boba', name: 'Tapioka Boba (Shariklar)', price: 4000 },
   { id: 'pudding', name: 'Sutli Pudding', price: 4000 },
   { id: 'coconut_jelly', name: 'Kokos Jelesi', price: 4000 },
   { id: 'popping_boba', name: 'Meva Popping Boba', price: 5000 },
@@ -164,11 +164,11 @@ export const PROMOTIONS = [
   },
   {
     id: 2,
-    title: '2+1 Boba Choy Aksiyasi',
-    subtitle: 'Har 2 ta katta Boba Choy xaridiga 1 ta Muzqaymoq BEPUL!',
-    description: 'Do\'stlaringiz bilan keling va mazali boba ta\'midan bahramand bo\'ling.',
+    title: '2+1 Bubble Tea Aksiyasi',
+    subtitle: 'Har 2 ta katta Bubble Tea xaridiga 1 ta Muzqaymoq BEPUL!',
+    description: 'Do\'stlaringiz bilan keling va mazali Bubble Tea ta\'midan bahramand bo\'ling.',
     image: '/wedrinkphotos/5426900635921094963_121.jpg',
-    tag: 'TEKUN',
+    tag: 'TEKIN',
     bgGradient: 'from-wedrink-teal to-cyan-900'
   },
   {
@@ -187,7 +187,7 @@ export const REVIEWS = [
     id: 1,
     name: 'Sardorbek K.',
     rating: 5,
-    comment: 'Termizdagi eng zo\'r boba tea shu yerda! Ayniqsa Brown sugar boba va Matchali muzqaymoq juda mazali.',
+    comment: 'Termizdagi eng zo\'r Bubble Tea shu yerda! Ayniqsa Brown sugar bubble tea va Matchali muzqaymoq juda mazali.',
     date: 'Kecha',
     avatar: '👨‍💼'
   },
