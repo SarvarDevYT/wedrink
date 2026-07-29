@@ -160,7 +160,7 @@ export const PROMOTIONS = [
     description: 'Yangi ta\'m, yangi zavq! Matcha ixlosmandlari uchun maxsus taklif.',
     image: '/wedrinkphotos/5426900635921094966_121.jpg',
     tag: 'YANGILIK',
-    bgGradient: 'from-emerald-500 to-teal-700'
+    bgGradient: 'from-[#00A896] to-emerald-800'
   },
   {
     id: 2,
@@ -169,16 +169,16 @@ export const PROMOTIONS = [
     description: 'Do\'stlaringiz bilan keling va mazali boba ta\'midan bahramand bo\'ling.',
     image: '/wedrinkphotos/5426900635921094963_121.jpg',
     tag: 'TEKUN',
-    bgGradient: 'from-wedrink-teal to-cyan-600'
+    bgGradient: 'from-wedrink-teal to-cyan-900'
   },
   {
     id: 3,
     title: 'Issiq kunlarda Muzdek Smuzilar!',
     subtitle: 'Barcha mevali choylarga 15% chegirma',
     description: 'Termizning issiq kunlarida salqinlik baxsh etuvchi eng sara ichimliklar.',
-    image: '/wedrinkphotos/5426900635921094964_121.jpg',
+    image: '/wedrinkphotos/5426900635921094965_121.jpg',
     tag: 'CHEGIRMA',
-    bgGradient: 'from-pink-500 to-rose-600'
+    bgGradient: 'from-pink-600 to-rose-950'
   }
 ];
 

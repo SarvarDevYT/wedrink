@@ -30,42 +30,46 @@ export default function Promotions({ onSelectPromo }) {
           {PROMOTIONS.map((promo) => (
             <div
               key={promo.id}
-              className="relative group rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-between h-[420px] text-white p-8 border border-white/20"
+              className="relative group rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-between h-[420px] text-white p-8 border border-gray-100"
             >
-              {/* Image background with dark overlay */}
+              {/* Image background */}
               <img
                 src={promo.image}
                 alt={promo.title}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-108 transition-transform duration-700"
               />
-              <div className={`absolute inset-0 bg-gradient-to-t ${promo.bgGradient} opacity-85 group-hover:opacity-90 transition-opacity duration-300`}></div>
+
+              {/* Dark overlay for crystal clear contrast & sharpness */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/70 to-black/40 opacity-90 group-hover:opacity-95 transition-opacity duration-300"></div>
 
               {/* Card Header */}
               <div className="relative z-10 flex items-center justify-between">
-                <span className="bg-white text-wedrink-dark font-black text-xs px-3.5 py-1.5 rounded-full shadow-md tracking-wider">
+                <span className="bg-wedrink-pink text-white font-black text-xs px-3.5 py-1.5 rounded-full shadow-md tracking-wider uppercase">
                   {promo.tag}
                 </span>
-                <span className="text-white/80 text-xs font-bold">WeDrink Special</span>
+                <span className="text-wedrink-yellow text-xs font-bold bg-black/40 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                  WeDrink Special
+                </span>
               </div>
 
               {/* Card Main Info */}
               <div className="relative z-10 space-y-3">
-                <h3 className="font-fredoka text-2xl sm:text-3xl font-extrabold text-white leading-tight drop-shadow-sm">
+                <h3 className="font-fredoka text-2xl sm:text-3xl font-extrabold text-white leading-tight drop-shadow-md">
                   {promo.title}
                 </h3>
-                <p className="text-sm font-semibold text-white/90 line-clamp-2">
+                <p className="text-sm font-bold text-wedrink-yellow line-clamp-2">
                   {promo.subtitle}
                 </p>
-                <p className="text-xs text-white/75 leading-relaxed">
+                <p className="text-xs text-gray-200 leading-relaxed font-medium">
                   {promo.description}
                 </p>
 
                 <a
                   href="#menu"
-                  className="inline-flex items-center gap-2 bg-white hover:bg-wedrink-yellow text-wedrink-dark font-fredoka font-bold text-sm px-5 py-3 rounded-xl transition-all shadow-md group-hover:gap-3"
+                  className="inline-flex items-center gap-2 bg-wedrink-teal hover:bg-wedrink-teal-dark text-white font-fredoka font-bold text-sm px-6 py-3 rounded-2xl transition-all shadow-cute hover:shadow-cute-lg group-hover:gap-3"
                 >
                   <span>Aksiyadan Foydalanish</span>
-                  <ArrowRight className="w-4 h-4 text-wedrink-pink" />
+                  <ArrowRight className="w-4 h-4 text-wedrink-yellow" />
                 </a>
               </div>
             </div>
