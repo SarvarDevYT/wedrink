@@ -16,7 +16,9 @@ import {
   Filter,
   Image as ImageIcon,
   Upload,
-  Link as LinkIcon
+  Link as LinkIcon,
+  Camera,
+  Heart
 } from 'lucide-react';
 import { PRODUCTS as defaultProducts } from '../../data/products';
 
@@ -25,15 +27,20 @@ export default function AdminPage() {
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
 
-  const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'products'
+  const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'products' | 'gallery'
   const [orderFilter, setOrderFilter] = useState('all');
 
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState(defaultProducts);
+  const [gallery, setGallery] = useState([]);
 
+  // Modals state
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
-  const [imageUploadType, setImageUploadType] = useState('preset'); // 'preset' | 'file' | 'url'
+  const [isAddGalleryModalOpen, setIsAddGalleryModalOpen] = useState(false);
   
+  const [imageUploadType, setImageUploadType] = useState('preset'); // 'preset' | 'file' | 'url'
+  const [galleryUploadType, setGalleryUploadType] = useState('file'); // 'file' | 'url'
+
   const [newProduct, setNewProduct] = useState({
     name: '',
     category: 'boba',
@@ -43,6 +50,13 @@ export default function AdminPage() {
     image: '/products/brown_sugar_boba.png',
     description: '',
     calories: '200 kcal',
+  });
+
+  const [newGallery, setNewGallery] = useState({
+    title: '',
+    image: '',
+    tag: '#wedrink_termiz',
+    likes: 150,
   });
 
   const PRESET_IMAGES = [
@@ -68,6 +82,7 @@ export default function AdminPage() {
     if (!isAuthenticated) return;
     fetchOrders();
     fetchProducts();
+    fetchGallery();
   }, [isAuthenticated]);
 
   const fetchOrders = async () => {
@@ -86,6 +101,16 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success && data.products) {
         setProducts(data.products);
+      }
+    } catch (e) {}
+  };
+
+  const fetchGallery = async () => {
+    try {
+      const res = await fetch('/api/gallery');
+      const data = await res.json();
+      if (data.success && data.gallery) {
+        setGallery(data.gallery);
       }
     } catch (e) {}
   };
@@ -121,13 +146,12 @@ export default function AdminPage() {
     } catch (e) {}
   };
 
-  // Convert File to Base64 Data URL for instant preview & upload
-  const handleFileUpload = (e) => {
+  const handleFileUpload = (e, targetSetter, currentObj) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setNewProduct({ ...newProduct, image: reader.result });
+        targetSetter({ ...currentObj, image: reader.result });
       };
       reader.readAsDataURL(file);
     }
@@ -175,6 +199,48 @@ export default function AdminPage() {
       const data = await res.json();
       if (data.success && data.products) {
         setProducts(data.products);
+      }
+    } catch (e) {}
+  };
+
+  const handleAddGallery = async (e) => {
+    e.preventDefault();
+    if (!newGallery.title || !newGallery.image) {
+      alert('Iltimos, fotolavha sarlavhasi va rasmini tanlang!');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/gallery', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newGallery),
+      });
+
+      const data = await res.json();
+      if (data.success && data.gallery) {
+        setGallery(data.gallery);
+        setIsAddGalleryModalOpen(false);
+        setNewGallery({
+          title: '',
+          image: '',
+          tag: '#wedrink_termiz',
+          likes: 150,
+        });
+      }
+    } catch (e) {}
+  };
+
+  const handleDeleteGallery = async (id) => {
+    if (!confirm('Ushbu fotolavhani galereyadan o\'chirmoqchimisiz?')) return;
+
+    try {
+      const res = await fetch(`/api/gallery?id=${id}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success && data.gallery) {
+        setGallery(data.gallery);
       }
     } catch (e) {}
   };
@@ -343,15 +409,15 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Total Products */}
+          {/* Total Gallery Photos */}
           <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl font-bold">
-              🍦
+            <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl font-bold">
+              📸
             </div>
             <div>
-              <span className="text-xs font-bold text-gray-400 block uppercase">Menyu Mahsulotlari</span>
-              <span className="font-fredoka text-2xl font-extrabold text-amber-600">
-                {products.length} tur
+              <span className="text-xs font-bold text-gray-400 block uppercase">Fotolavhalar</span>
+              <span className="font-fredoka text-2xl font-extrabold text-purple-600">
+                {gallery.length} ta
               </span>
             </div>
           </div>
@@ -361,10 +427,10 @@ export default function AdminPage() {
         {/* Tab Switcher & Actions Bar */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-3 rounded-2xl border border-gray-100 shadow-sm">
           
-          <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
             <button
               onClick={() => setActiveTab('orders')}
-              className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-fredoka font-bold text-sm transition-all ${
+              className={`px-5 py-3 rounded-xl font-fredoka font-bold text-sm transition-all whitespace-nowrap ${
                 activeTab === 'orders'
                   ? 'bg-wedrink-teal text-white shadow-sm'
                   : 'text-gray-600 hover:bg-gray-100'
@@ -374,13 +440,23 @@ export default function AdminPage() {
             </button>
             <button
               onClick={() => setActiveTab('products')}
-              className={`flex-1 sm:flex-none px-6 py-3 rounded-xl font-fredoka font-bold text-sm transition-all ${
+              className={`px-5 py-3 rounded-xl font-fredoka font-bold text-sm transition-all whitespace-nowrap ${
                 activeTab === 'products'
                   ? 'bg-wedrink-teal text-white shadow-sm'
                   : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
-              🥤 Menyuni Boshqarish ({products.length})
+              🥤 Menyu ({products.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('gallery')}
+              className={`px-5 py-3 rounded-xl font-fredoka font-bold text-sm transition-all whitespace-nowrap ${
+                activeTab === 'gallery'
+                  ? 'bg-wedrink-teal text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              📸 Fotolavhalar ({gallery.length})
             </button>
           </div>
 
@@ -391,6 +467,16 @@ export default function AdminPage() {
             >
               <Plus className="w-5 h-5" />
               <span>Yangi Mahsulot Qo'shish</span>
+            </button>
+          )}
+
+          {activeTab === 'gallery' && (
+            <button
+              onClick={() => setIsAddGalleryModalOpen(true)}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-wedrink-teal hover:bg-wedrink-teal-dark text-white font-fredoka font-bold text-sm px-5 py-3 rounded-xl shadow-cute transition-all"
+            >
+              <Camera className="w-5 h-5" />
+              <span>Yangi Fotolavha Qo'shish</span>
             </button>
           )}
 
@@ -592,6 +678,52 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* TAB 3: GALLERY MANAGEMENT */}
+        {activeTab === 'gallery' && (
+          <div className="space-y-6">
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {gallery.map((item) => (
+                <div
+                  key={item.id}
+                  className="bg-white rounded-3xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                >
+                  <div className="relative h-56 rounded-2xl overflow-hidden bg-gray-100 mb-3">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
+                    <span className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full">
+                      {item.tag}
+                    </span>
+                    <button
+                      onClick={() => handleDeleteGallery(item.id)}
+                      className="absolute top-3 right-3 bg-white/90 text-wedrink-pink hover:bg-wedrink-pink hover:text-white p-2 rounded-full shadow-md transition-all"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="font-fredoka text-base font-bold text-wedrink-dark line-clamp-2">
+                      {item.title}
+                    </h4>
+                    <div className="flex items-center justify-between text-xs text-gray-500 font-medium pt-2 border-t border-gray-100">
+                      <span className="flex items-center gap-1 text-wedrink-pink font-bold">
+                        <Heart className="w-3.5 h-3.5 fill-wedrink-pink" />
+                        {item.likes} ta yoqdi
+                      </span>
+                      <span className="text-[11px] text-gray-400 font-mono">ID: #{item.id}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        )}
+
       </div>
 
       {/* Add Product Modal */}
@@ -620,7 +752,6 @@ export default function AdminPage() {
 
             <form onSubmit={handleAddProduct} className="space-y-4 text-xs font-bold text-gray-700">
               
-              {/* Product Name */}
               <div className="space-y-1">
                 <label>Mahsulot Nomi: *</label>
                 <input
@@ -632,7 +763,6 @@ export default function AdminPage() {
                 />
               </div>
 
-              {/* Category & Price */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label>Kategoriya:</label>
@@ -660,7 +790,7 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              {/* IMAGE SELECTION TYPE: Preset vs File Upload vs URL Link */}
+              {/* IMAGE SELECTION */}
               <div className="space-y-2 pt-1 border-t border-gray-100">
                 <label className="flex items-center gap-1.5 text-wedrink-teal">
                   <ImageIcon className="w-4 h-4" />
@@ -705,7 +835,6 @@ export default function AdminPage() {
                   </button>
                 </div>
 
-                {/* Option 1: Preset selector */}
                 {imageUploadType === 'preset' && (
                   <select
                     value={newProduct.image}
@@ -720,22 +849,17 @@ export default function AdminPage() {
                   </select>
                 )}
 
-                {/* Option 2: File upload */}
                 {imageUploadType === 'file' && (
                   <div className="space-y-1">
                     <input
                       type="file"
                       accept="image/*"
-                      onChange={handleFileUpload}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-wedrink-teal-light file:text-wedrink-teal hover:file:bg-wedrink-teal hover:file:text-white transition-all cursor-pointer"
+                      onChange={(e) => handleFileUpload(e, setNewProduct, newProduct)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-wedrink-teal-light file:text-wedrink-teal cursor-pointer"
                     />
-                    <p className="text-[10px] text-gray-400 font-normal">
-                      Kompyuter yoki telefondan rasm tanlang (PNG, JPG, WebP)
-                    </p>
                   </div>
                 )}
 
-                {/* Option 3: URL Link input */}
                 {imageUploadType === 'url' && (
                   <input
                     type="url"
@@ -746,7 +870,6 @@ export default function AdminPage() {
                   />
                 )}
 
-                {/* Image Preview Box */}
                 {newProduct.image && (
                   <div className="flex items-center gap-3 bg-gray-50 p-2.5 rounded-2xl border border-gray-200">
                     <img
@@ -762,19 +885,17 @@ export default function AdminPage() {
                 )}
               </div>
 
-              {/* Badge tag */}
               <div className="space-y-1">
                 <label>Nishon (Badge):</label>
                 <input
                   type="text"
-                  placeholder="YANGI! / BESTSELLER / SUPER NARX"
+                  placeholder="YANGI! / BESTSELLER"
                   value={newProduct.badge}
                   onChange={(e) => setNewProduct({ ...newProduct, badge: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-medium"
                 />
               </div>
 
-              {/* Description */}
               <div className="space-y-1">
                 <label>Tavsif (Description):</label>
                 <textarea
@@ -797,6 +918,157 @@ export default function AdminPage() {
                 <button
                   type="submit"
                   className="px-6 py-2.5 rounded-xl bg-wedrink-teal text-white font-fredoka font-bold shadow-cute hover:bg-wedrink-teal-dark"
+                >
+                  Saqlash va Qo'shish
+                </button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      )}
+
+      {/* Add Gallery Photo Modal */}
+      {isAddGalleryModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-6 relative my-8">
+            
+            <button
+              onClick={() => setIsAddGalleryModalOpen(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-wedrink-pink p-1"
+            >
+              <X className="w-6 h-6" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-lg">
+                📸
+              </div>
+              <div>
+                <h3 className="font-fredoka text-2xl font-bold text-wedrink-dark">
+                  Yangi Fotolavha Qo'shish
+                </h3>
+                <p className="text-xs text-gray-500">Galereyaga yangi foto surat joylashtiring</p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddGallery} className="space-y-4 text-xs font-bold text-gray-700">
+              
+              <div className="space-y-1">
+                <label>Fotolavha Sarlavhasi: *</label>
+                <input
+                  type="text"
+                  placeholder="Masalan: Termiz Filialimizda Quvnoq Lahzalar"
+                  value={newGallery.title}
+                  onChange={(e) => setNewGallery({ ...newGallery, title: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-medium"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label>Hashtag Tag:</label>
+                  <input
+                    type="text"
+                    placeholder="#wedrink_termiz"
+                    value={newGallery.tag}
+                    onChange={(e) => setNewGallery({ ...newGallery, tag: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-medium"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label>Initial Likes Count:</label>
+                  <input
+                    type="number"
+                    value={newGallery.likes}
+                    onChange={(e) => setNewGallery({ ...newGallery, likes: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-wedrink-teal outline-none font-bold"
+                  />
+                </div>
+              </div>
+
+              {/* IMAGE SELECTION TYPE */}
+              <div className="space-y-2 pt-1 border-t border-gray-100">
+                <label className="flex items-center gap-1.5 text-purple-600">
+                  <ImageIcon className="w-4 h-4" />
+                  <span>Rasm Yuklash Usuli:</span>
+                </label>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setGalleryUploadType('file')}
+                    className={`py-2 px-2 rounded-xl border text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                      galleryUploadType === 'file'
+                        ? 'border-purple-600 bg-purple-50 text-purple-700'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Fayl Yuklash</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGalleryUploadType('url')}
+                    className={`py-2 px-2 rounded-xl border text-[11px] font-bold transition-all flex items-center justify-center gap-1 ${
+                      galleryUploadType === 'url'
+                        ? 'border-purple-600 bg-purple-50 text-purple-700'
+                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <LinkIcon className="w-3.5 h-3.5" />
+                    <span>Link Havola</span>
+                  </button>
+                </div>
+
+                {galleryUploadType === 'file' && (
+                  <div className="space-y-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, setNewGallery, newGallery)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-purple-100 file:text-purple-700 cursor-pointer"
+                    />
+                  </div>
+                )}
+
+                {galleryUploadType === 'url' && (
+                  <input
+                    type="url"
+                    placeholder="https://example.com/foto.jpg"
+                    value={newGallery.image}
+                    onChange={(e) => setNewGallery({ ...newGallery, image: e.target.value })}
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:border-purple-600 outline-none font-medium"
+                  />
+                )}
+
+                {newGallery.image && (
+                  <div className="flex items-center gap-3 bg-gray-50 p-2.5 rounded-2xl border border-gray-200">
+                    <img
+                      src={newGallery.image}
+                      alt="Preview"
+                      className="w-14 h-14 rounded-xl object-cover border border-gray-200"
+                    />
+                    <div className="text-[11px] text-gray-500 truncate flex-grow">
+                      <span className="font-bold text-gray-700 block">Foto Ko'rinishi:</span>
+                      <span className="truncate block font-mono text-[10px]">{newGallery.image}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddGalleryModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl border border-gray-200 font-bold text-gray-600 hover:bg-gray-50"
+                >
+                  Bekor qilish
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-purple-600 text-white font-fredoka font-bold shadow-md hover:bg-purple-700"
                 >
                   Saqlash va Qo'shish
                 </button>
